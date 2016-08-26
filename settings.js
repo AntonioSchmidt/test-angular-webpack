@@ -1,0 +1,5 @@
+module.exports = {
+  PROJECT_DIR: __dirname,
+  AP_ANGULAR_DEFAULT_DEBOUNCE: 300,
+  AP_ANGULAR_DEFAULT_BLUR: 0,
+};
