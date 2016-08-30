@@ -1,9 +1,6 @@
 const settings = require('./settings.js');
 const ExtractTextPlugin = require('extract-text-webpack-plugin');
-const webpack = require('webpack');
 const path = require('path');
-const HtmlWebpackPlugin = require('html-webpack-plugin');
-const BrowserSyncPlugin = require('browser-sync-webpack-plugin');
 const autoprefixer = require('autoprefixer');
 const del = require('del');
 
@@ -17,10 +14,10 @@ const inlineCssLoader = {
 };
 
 module.exports = (function createConfig() {
-  const localhostPath = 'http://localhost:8080/';
-  const isProd = process.env.NODE_ENV === 'prod';
-  const isDev = process.env.NODE_ENV === 'dev';
-  const bootstrapEntryPoint = isDev ? 'bootstrap-loader' : 'bootstrap-loader/extractStyles';
+  const ENV = process.env.NODE_ENV;
+  const isProd = ENV === 'prod';
+  const isDev = ENV === 'dev';
+  const bootstrapEntryPoint = isProd ? 'bootstrap-loader/extractStyles' : 'bootstrap-loader';
   console.log(`Creating webpack config with ENV: ${process.env.NODE_ENV}`);
   console.log(`Bootstrap entry-point: ${bootstrapEntryPoint}\n`);
   del(['dist/**']).then(paths => {
@@ -68,21 +65,7 @@ module.exports = (function createConfig() {
       ],
     },
     postcss: [autoprefixer],
-    plugins: [
-      new HtmlWebpackPlugin({
-        template: './src/app/index.html',
-      }),
-      new webpack.ProvidePlugin({
-        $: 'jquery',
-        jQuery: 'jquery',
-        'window.jQuery': 'jquery',
-      }),
-      new webpack.optimize.DedupePlugin(),
-      new webpack.DefinePlugin({
-        AP_ANGULAR_DEFAULT_DEBOUNCE: settings.AP_ANGULAR_DEFAULT_DEBOUNCE,
-        AP_ANGULAR_DEFAULT_BLUR: settings.AP_ANGULAR_DEFAULT_BLUR,
-      }),
-    ],
+    plugins: settings.WEBPACK_PLUGINS[ENV],
     node: {
       fs: 'empty',
     },
@@ -103,35 +86,15 @@ module.exports = (function createConfig() {
         loader: 'css!postcss',
       }),
     });
-    config.plugins.push(new ExtractTextPlugin('styles.css'));
-    config.plugins.push(new webpack.IgnorePlugin(/^(.*spec.*)$/));
-    config.plugins.push(new webpack.optimize.UglifyJsPlugin({
-      comments: false,
-      beautify: false,
-      compress: {
-        warnings: false,
-      },
-    }));
   } else {
     if (isDev) {
-      config.devtool = 'inline-source-map';
       config.module.loaders.push(inlineSassLoader);
       config.module.loaders.push(inlineCssLoader);
+      config.devtool = 'inline-source-map';
     }
-    config.entry.unshift(`webpack-dev-server/client?${localhostPath}`, 'webpack/hot/dev-server');
-    config.plugins.push(new webpack.HotModuleReplacementPlugin());
-    config.plugins.push(new BrowserSyncPlugin(
-      {
-        host: 'localhost',
-        port: 3000,
-        proxy: localhostPath,
-      },
-      {
-        reload: false,
-      }
-    ));
+    config.entry.unshift(`webpack-dev-server/client?${settings.HOST_LOCATION}`,
+      'webpack/hot/dev-server');
     config.devServer = {
-      publicPath: config.output.publicPath,
       hot: true,
       contentBase: '/dist/',
       stats: {

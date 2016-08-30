@@ -1,7 +1,7 @@
 const webpackConfig = require('./webpack.config.js');
 
 webpackConfig.entry = {};
-webpackConfig.plugins = [];
+webpackConfig.devtool = 'eval';
 module.exports = (config) => {
   config.set({
     basePath: '',
