@@ -1,0 +1,10 @@
+{
+  'extends': 'airbnb-base',
+  'no-console': {
+    'allow': ['log']
+  },
+  'rules': {
+    'import/no-extraneous-dependencies': ['warn', {'devDependencies': true, 'optionalDependencies': true, 'peerDependencies': true}],
+    'no-console': 'off'
+    }
+}
